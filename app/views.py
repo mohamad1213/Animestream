@@ -11,132 +11,286 @@ import requests
 from datetime import datetime
 from django.shortcuts import render
 from urllib.parse import quote_plus
+from datetime import datetime, timedelta
+from urllib.request import Request, urlopen
+def filter_anime_by_timeframe(anime_data, days):
+    """
+    Memfilter anime berdasarkan rentang waktu terakhir (hari).
+    """
+    filtered_anime = []
+    current_date = datetime.now()
+
+    for anime in anime_data:
+        start_date_str = anime.get('attributes', {}).get('startDate')  # Ambil startDate
+        if start_date_str:
+            try:
+                # Konversi startDate menjadi objek datetime
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+                
+                # Hitung perbedaan waktu
+                if current_date - start_date <= timedelta(days=days):
+                    filtered_anime.append(anime)
+            except ValueError:
+                # Jika startDate memiliki format yang tidak sesuai
+                print(f"Invalid date format: {start_date_str}")
+                continue
+    
+    # Batasi hasil ke 5 item
+    return filtered_anime[:5]
+def get_season():
+    """Determine the current season based on the current month."""
+    month = datetime.now().month
+    if 3 <= month <= 5:
+        return "spring"
+    elif 6 <= month <= 8:
+        return "summer"
+    elif 9 <= month <= 11:
+        return "fall"
+    else:
+        return "winter"
+    
+def get_genres_by_anime_id(anime_id):
+    """Get genres of an anime by anime_id from Kitsu API."""
+    url = f'https://kitsu.io/api/edge/anime/{anime_id}'
+    
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        anime_data = response.json().get('data', {})
+        included_data = response.json().get('included', [])
+        
+        # Extract genres from included data
+        genres = [genre['attributes']['name'] for genre in included_data if genre['type'] == 'genres']
+        
+        return genres
+    else:
+        print(f"Error fetching anime data: {response.status_code}")
+        return []
+
+def fetch_data_from_api(url, params=None):
+    """Fungsi untuk melakukan request ke API dan mengembalikan data JSON."""
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()  # Untuk memicu exception jika status code bukan 200
+        return response.json().get('data', [])
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data from {url}: {e}")
+        return []
+
+def fetch_anime_episodes(anime_id):
+    """Fetch episode details for a specific anime."""
+    try:
+        url = f'https://kitsu.io/api/edge/anime/{anime_id}/episodes'
+        request = Request(url)
+        response = urlopen(request).read()
+        return json.loads(response).get('data', [])
+    except Exception as e:
+        print(f"Error fetching anime episodes: {e}")
+        return []
+
 def index(request):
-    query = request.GET.get('search_query', '')  # Get search query from the URL
+    # Mendapatkan query pencarian
+    query = request.GET.get('search_query', '')
     search_results = []
 
     if query:
-        # URL-encode the query to handle special characters
+        # URL-encode query untuk menangani karakter khusus
         encoded_query = quote_plus(query)
+        search_results = fetch_data_from_api(f'https://kitsu.io/api/edge/anime', {'filter[text]': encoded_query})
 
-        # Make the API request to Jikan search endpoint
-        response = requests.get(f'https://api.jikan.moe/v4/anime?q={encoded_query}&limit=10')  # You can adjust the limit
-        print(f"Request URL: https://api.jikan.moe/v4/anime?q={encoded_query}&limit=10")
-        if response.status_code == 200:
-            search_results = response.json().get('data', [])
-
-        else:
-            print(f"Error fetching search results: {response.status_code}")
-    def get_season():
-        month = datetime.now().month
-        if 4 <= month <= 6:
-            return "spring"
-        elif 7 <= month <= 9:
-            return "summer"
-        elif 10 <= month <= 12:
-            return "fall"
-        else:
-            return "winter"
-
+    # Menentukan musim dan tahun saat ini
     current_year = datetime.now().year
+    season = get_season()
 
-    # Inisialisasi variabel dengan nilai default
-    airing_now_data = {}
-    top_anime_data = {}
-    popular_anime_data = {}
-    anime_recommendations = []
+    # Mengambil data anime trending (populer berdasarkan season saat ini)
+    trending_anime_data = fetch_data_from_api(f'https://kitsu.io/api/edge/anime', {'filter[season]': season, 'filter[seasonYear]': current_year})
+    trend_anime_data = fetch_data_from_api(f'https://kitsu.io/api/edge/trending/anime')
 
-    # Fetch data anime airing sekarang
-    response = requests.get(f'https://api.jikan.moe/v4/seasons/{current_year}/{get_season()}')
-    if response.status_code == 200:
-        airing_now_data = response.json()
-    else:
-        print(f"Error fetching airing now data: {response.status_code}")
+    # Mengambil data anime airing sekarang (seasonal anime)
+    airing_now_data = fetch_data_from_api(f'https://kitsu.io/api/edge/anime', {'filter[season]': season, 'filter[seasonYear]': current_year})
 
-    # Fetch data top anime
-    response = requests.get('https://api.jikan.moe/v4/top/anime')
-    if response.status_code == 200:
-        top_anime_data = response.json()
-    else:
-        print(f"Error fetching top anime data: {response.status_code}")
+    # Mengambil data top anime
+    top_anime_data = fetch_data_from_api('https://kitsu.io/api/edge/anime', {'sort': '-averageRating', 'limit': 10})
+    
+    # Mengambil data populer anime
+    popular_anime_data = fetch_data_from_api('https://kitsu.io/api/edge/anime', {'sort': 'popularityRank', 'limit': 10})
+    views_anime_data = fetch_data_from_api('https://kitsu.io/api/edge/anime', {'sort': '-userCount', 'limit': 10})
+    day_anime = filter_anime_by_timeframe(views_anime_data, days=1)    # Data hari terakhir
+    week_anime = filter_anime_by_timeframe(views_anime_data, days=7)  # Data minggu terakhir
+    month_anime = filter_anime_by_timeframe(views_anime_data, days=30)  
 
-    # Fetch data popular anime
-    response = requests.get('https://api.jikan.moe/v4/top/anime?filter=bypopularity')
-    if response.status_code == 200:
-        popular_anime_data = response.json()
-    else:
-        print(f"Error fetching popular anime data: {response.status_code}")
+    print("Day Anime Data:", day_anime)
+    print("Week Anime Data:", week_anime)
+    print("Month Anime Data:", month_anime)
 
-    # Fetch data anime recommendations (misalnya, rekomendasi untuk anime dengan id tertentu)
-    anime_id = 5114  # Contoh ID anime, ganti sesuai dengan ID anime yang relevan
-    response = requests.get(f'https://api.jikan.moe/v4/anime/{anime_id}/recommendations')
-    if response.status_code == 200:
-        anime_recommendations = response.json().get('data', [])
-    else:
-        print(f"Error fetching anime recommendations data: {response.status_code}")
-
+    # Menyiapkan konteks untuk template
     context = {
-        'airing_now_data': airing_now_data.get('data', []),
-        'top_anime_data': top_anime_data.get('data', []),
-        'popular_anime_data': popular_anime_data.get('data', []),
-        'anime_recommendations': anime_recommendations,
-        'search_results': search_results
+        'airing_now_data': airing_now_data[:5],
+        'views_anime_data': views_anime_data[:5],
+        'trend_anime_data': trend_anime_data[:5],
+        'top_anime_data': top_anime_data[:6],
+        'popular_anime_data': popular_anime_data[:6],
+        'search_results': search_results,
+        'trending_anime': trending_anime_data[:6],
+        'day_anime': day_anime[:5],
+        'week_anime': week_anime[:5],
+        'month_anime': month_anime[:5],
     }
+
     return render(request, 'index.html', context)
 
-def getAnimeRecommendations(anime_id):
-    try:
-        response = requests.get(f'https://api.jikan.moe/v4/anime/{anime_id}/recommendations')
-        if response.status_code == 200:
-            recommendations_data = response.json().get('data', [])
-            return recommendations_data
-        else:
-            print(f"Error fetching recommendations: {response.status_code}")
-            return []
-    except Exception as e:
-        print(f"Error fetching recommendations: {e}")
-        return []
 
-
-
-
-def index_two(request, anime_id):
-    # Menggunakan Jikan API untuk mendapatkan data anime
-    response = requests.get(f'https://api.jikan.moe/v4/anime/{anime_id}')
-
-    anime_data = {}  # Inisialisasi default anime_data sebagai dictionary kosong
-
-    if response.status_code == 200:
-        anime_data = response.json().get('data', {})
-        recommendations_data = getAnimeRecommendations(anime_id)
-        
-        # Get the related anime data
-    else:
-        print(f"Error: {response.status_code}")
+def fetch_anime_details(anime_id):
+    """Fetch anime details from Kitsu API."""
+    url = f'https://kitsu.io/api/edge/anime/{anime_id}'
+    response = requests.get(url)
     
-    # Error handling untuk memastikan bahwa 'anime_data' tidak kosong
-    if not anime_data:
-        return render(request, 'error.html', {'message': 'Anime data not found'})
+    if response.status_code == 200:
+        print(response.json())  # Print the entire response to debug
+        return response.json().get('data', {})
+    else:
+        print(f"Error fetching anime details: {response.status_code}")
+        return None
 
-    start_date = datetime.fromisoformat(anime_data['aired']['from'])
-    end_date = datetime.fromisoformat(anime_data['aired']['to'])
-    context = {
-        'anime_data': anime_data,
-        'relation_length': len(anime_data.get('related', [])),
-        'start_date':start_date,
-        'recommendation': recommendations_data
+
+import requests
+
+def fetch_anime_details_with_studios(anime_id):
+    """Fetch anime details, including studio information if available."""
+    base_url = "https://kitsu.io/api/edge"
+
+    # Fetch anime details
+    anime_url = f"{base_url}/anime/{anime_id}"
+    anime_response = requests.get(anime_url)
+    anime_data = anime_response.json().get("data", {})
+    
+    # Default studio data (if not available)
+    studios = ["Studio data not available"]
+
+    # Check for anime productions data
+    anime_productions_url = anime_data.get("relationships", {}).get("animeProductions", {}).get("links", {}).get("related")
+    
+    if anime_productions_url:
+        # Fetch anime productions
+        productions_response = requests.get(anime_productions_url)
+        productions_data = productions_response.json().get("data", [])
         
+        # If there are productions, check for studio information
+        for production in productions_data:
+            studio_url = production.get("relationships", {}).get("studio", {}).get("links", {}).get("related")
+            if studio_url:
+                # Fetch studio details
+                studio_response = requests.get(studio_url)
+                studio_data = studio_response.json().get("data", {})
+                studio_name = studio_data.get("attributes", {}).get("name", "Unknown Studio")
+                studios.append(studio_name)
+
+    return {
+        "anime_data": anime_data,
+        "studios": studios,
     }
-    return render(request, 'anime-view.html', context)
 
-
-# def index_three(request, search_query):
-#     from django.http import JsonResponse
-#     headers = {'X-MAL-CLIENT-ID': API_KEY}
-#     response = requests.get(f'https://api.myanimelist.net/v2/anime?q={search_query}&fields=mean,media_type,num_episodes,start_date,end_date', headers=headers)
-#     if response.status_code == 200:
-#         data = response.json()
-#         return JsonResponse(data)
-#     else:
-#         print(f"Error: {response.status_code}")
+def anime_detail_view(request, anime_id):
+    """Fetch anime details from Kitsu API."""
+    url = f'https://kitsu.io/api/edge/anime/{anime_id}'
+    response = requests.get(url)
+    if response.status_code == 200:
+        response_data = response.json()
+        anime_data = response_data.get('data', {})
+        rating_frequencies = anime_data.get('attributes', {}).get('ratingFrequencies', {})
+        # Menghitung total votes
+        total_votes = sum(int(v) for v in rating_frequencies.values())
+        rating_frequencies = anime_data.get('attributes', {}).get('ratingFrequencies', {})
+        genres = []
+        genre_url = anime_data.get('relationships', {}).get('genres', {}).get('links', {}).get('related')
+        if genre_url:
+            genre_response = requests.get(genre_url)
+            if genre_response.status_code == 200:
+                genres_data = genre_response.json().get('data', [])
+                genres = [genre.get('attributes', {}).get('name', 'Unknown') for genre in genres_data]
+        
             
+        
+        studios = fetch_anime_details_with_studios(anime_id)
+
+    context = {
+        'total_votes': total_votes,
+        # 'studios': studios['studios'],
+        'genres': genres,
+        'anime_data': anime_data,
+        "rating_frequencies": rating_frequencies,
+    }
+    
+    return render(request, 'anime-view.html', context)
+def fetch_free_streaming_links(related_url):
+    """Fetch and filter free streaming links."""
+    response = requests.get(related_url)
+    if response.status_code == 200:
+        streaming_links = response.json().get('data', [])
+        free_links = []
+        for link in streaming_links:
+            site = link.get('attributes', {}).get('site', '').lower()
+            url = link.get('attributes', {}).get('url', '')
+            if site == 'youtube' and 'watch?v=' in url:
+                video_id = url.split('watch?v=')[-1]
+                free_links.append({
+                    'site': site,
+                    'video_id': video_id,
+                    'full_url': url,
+                })
+            elif site in ['muse asia', 'crunchyroll']:
+                free_links.append({
+                    'site': site,
+                    'full_url': url,
+                })
+        return free_links
+    return []
+def watch_anime(request, anime_id):
+    """Fetch anime details and episodes for streaming."""
+    base_url = "https://kitsu.io/api/edge"
+    anime_url = f"{base_url}/anime/{anime_id}"
+    
+    # Fetch the anime details from Kitsu API
+    anime_response = requests.get(anime_url)
+    if anime_response.status_code == 200:
+        anime_data = anime_response.json().get("data", {})
+        title = anime_data.get("attributes", {}).get("canonicalTitle", "Unknown Anime")
+        
+        # Attempt to fetch external link
+        external_link = None
+        relationships = anime_data.get("relationships", {})
+        external_links = relationships.get("externalLinks", {}).get("links", {}).get("related", None)
+        
+        if external_links:
+            external_response = requests.get(external_links)
+            if external_response.status_code == 200:
+                external_link_data = external_response.json().get("data", [])
+                if external_link_data:
+                    external_link = external_link_data[0].get("attributes", {}).get("url", None)
+        # Fetch streaming links
+        streaming_links = []
+        streaming_links_url = anime_data.get("relationships", {}).get("streamingLinks", {}).get("links", {}).get("related", "")
+        if streaming_links_url:
+            streaming_links = fetch_free_streaming_links(streaming_links_url)
+
+        # Fetch episodes
+        episodes_url = relationships.get("episodes", {}).get("links", {}).get("related", "")
+        episodes_data = []
+        if episodes_url:
+            episodes_response = requests.get(episodes_url)
+            if episodes_response.status_code == 200:
+                episodes_data = episodes_response.json().get("data", [])
+        
+        context = {
+            'anime_data': anime_data,
+            'episodes_data': episodes_data,
+            'external_link': external_link,
+            'streaming_links': streaming_links,
+        }
+        return render(request, 'watch_anime.html', context)
+    else:
+        # Handle the error case
+        return render(request, '404.html', {"message": "Anime not found"})

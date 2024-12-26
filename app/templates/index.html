@@ -1,206 +1,213 @@
-<html>
-
-<head>
-    {% load static %}
-    <title>
-        AnimaSuki
-    </title>
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static " ico\apple-touch-icon.png" %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static " ico\favicon-32x32.png" %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static " ico\favicon-16x16.png" %}">
-    <link rel="manifest" href="{% static " ico\site.webmanifest" %}">
-    <link rel="stylesheet" href="{% static 'css/index.css'%}">
-</head>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Mochiy+Pop+One&display=swap"
-    rel="stylesheet">
-
-<body>
-    <center>
-        <div id="navbar">
-            <a href={% url 'home' %}><span id="name-header"><span style="color: #ffd166;">Anime</span>Suki</span></a>
-            <form method="get" action="{% url 'home' %}">
-                <input id="input-box" name="search_query" placeholder="Search Anime"
-                    value="{{ request.GET.search_query }}">
-                <button id="search-button"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </form>
-        </div>
-        {% if search_results %}
-        <div class="header-and-buttons">
-            <h1 id="currently-airing-header"><i class="fa-solid fa-bars-progress"
-                    style="color: lime;"></i>&nbsp;&nbsp;THIS
-                SEASON</h1>
-            <div class="scroll-buttons">
-                <button class="scroll-buttons" id="previous-airing"><i class="fa-solid fa-arrow-left"></i></button>
-                <button class="scroll-buttons" id="next-airing"><i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-        </div>
-        <div id="airing-now-container">
-            { {% for anime in search_results %}
-            <a href="anime/id={{ anime.mal_id }}" class="anime-card-links">
-                <div class="anime-cards">
-                    <img src="{{ anime.images.jpg.image_url }}" class="image"
-                        alt="{{ anime.title }}">
-                    <p class="anime-title">{{ anime.title }}</p>
-                    <table class="airing-now-details-table">
-                        <tr>
-                            <td>
-                                <i class="fa-solid fa-star" style="color: gold"></i>&nbsp;
-                                {{ anime.score|default:"N/A" }}
-                            </td>
-                        </tr>
-                    </table>
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+<!-- Hero Section Begin -->
+<section class="hero">
+    <div class="container">
+        <div class="hero__slider owl-carousel">
+            {% for top_anime in trend_anime_data %}
+            <div class="hero__items set-bg" data-setbg="{{ top_anime.attributes.coverImage.original }}">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="hero__text">
+                            <div class="label">Adventure</div>
+                            <h2>{{ top_anime.attributes.titles.en_jp }}</h2>
+                            <p>{{ top_anime.attributes.synopsis|truncatewords:20 }}</p>
+                            <a href="/anime/{{top_anime.id}}"><span>Watch Now</span> <i
+                                    class="fa fa-angle-right"></i></a>
+                        </div>
+                    </div>
                 </div>
-            </a>
+            </div>
             {% empty %}
-            <p>No airing anime data available.</p>
+            <p>No top anime data available.</p>
             {% endfor %}
         </div>
-        {% else %}
-        {% if request.GET.search_query %}
-        <p>No results found for "{{ request.GET.search_query }}"</p>
-        {% endif %}
-        {% endif %}
-        <div id="container">
+    </div>
+</section>
+<!-- Hero Section End -->
+
+<!-- Product Section Begin -->
+<section class="product spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="trending__product">
+                    <div class="row">
+                        <div class="col-lg-8 col-md-8 col-sm-8">
+                            <div class="section-title">
+                                <h4>Trending Now</h4>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-4">
+                                <div class="btn__all">
+                                    <a href="#" class="primary-btn">View All <span class="arrow_right"></span></a>
+                                </div>
+                            </div>
+                        </div>
+                        {% if airing_now_data %}
+                        <div class="row">
+                            {% for trending_anime in airing_now_data %}
+                            <div class="col-lg-4 col-md-6 col-sm-6">
+                                <div class="product__item">
+                                    <div class="product__item__pic set-bg"
+                                        data-setbg="{{ trending_anime.attributes.posterImage.original }}">
+                                        <div class="ep">
+                                            {% if trending_anime.attributes %}
+                                            {{ trending_anime.attributes.episodeCount }} / {{trending_anime.attributes.episodeLength }}
+                                            {% else %}
+                                            N/A
+                                            {% endif %}
+                                        </div>
+                                        <div class="comment"><i class="fa fa-comments"></i>{{trending_anime.attributes.favoritesCount|default:0 }}</div>
+                                        <div class="view"><i class="fa fa-eye"></i> {{trending_anime.attributes.userCount|default:0}}</div>
+                                    </div>
+                                    <div class="product__item__text">
+                                        <ul>
+                                            <li>{{ trending_anime.attributes.status }}</li>
+                                            <li>{{ trending_anime.attributes.subtype }}</li>
+                                        </ul>
+                                        <h5><a href="/anime/{{trending_anime.id}}">{{ trending_anime.attributes.titles.en_jp }}</a></h5>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p>No trending anime available at the moment.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="popular__product">
+                    <div class="row">
+                        <div class="col-lg-8 col-md-8 col-sm-8">
+                            <div class="section-title">
+                                <h4>Popular Shows</h4>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-4">
+                            <div class="btn__all">
+                                <a href="#" class="primary-btn">View All <span class="arrow_right"></span></a>
+                            </div>
+                        </div>
+                    </div>
+                    {% if top_anime_data %}
+                    <div class="row">
+                        {% for trending_anime in top_anime_data %}
+                        <div class="col-lg-4 col-md-6 col-sm-6">
+                            <div class="product__item">
+                                <div class="product__item__pic set-bg"
+                                    data-setbg="{{ trending_anime.attributes.posterImage.original }}">
+                                    <div class="ep">
+                                        {% if trending_anime.attributes %}
+                                        {{ trending_anime.attributes.episodeCount }} / {{trending_anime.attributes.episodeLength }}
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </div>
+                                    <div class="comment"><i class="fa fa-comments"></i>{{trending_anime.attributes.favoritesCount|default:0 }}</div>
+                                        <div class="view"><i class="fa fa-eye"></i> {{trending_anime.attributes.userCount|default:0}}</div>
+                                </div>
+                                <div class="product__item__text">
+                                    <ul>
+                                        <li>{{ trending_anime.attributes.status }}</li>
+                                        <li>{{ trending_anime.attributes.subtype }}</li>
+                                    </ul>
+                                    <h5><a href="/anime/{{trending_anime.id}}">{{ trending_anime.attributes.titles.en_jp}}</a></h5>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p>No trending anime available at the moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-8">
+                <div class="product__sidebar">
+                    <div class="product__sidebar__view">
+                        <div class="section-title">
+                            <h5>Top Views</h5>
+                        </div>
+                        <div class="filter__gallery">
+                            <!-- Filtered by Day -->
+                            <div id="day" class="filter__list">
+                                {% for anime in views_anime_data %}
+                                    <div class="product__sidebar__view__item set-bg mix day" data-setbg="{{ anime.attributes.posterImage.medium }}">
+                                        <div class="ep">
+                                        {{ anime.attributes.episodeCount }} / {{anime.attributes.episodeLength }}
+                                        </div>
+                                        <div class="view"><i class="fa fa-eye"></i> {{ anime.attributes.userCount }}</div>
+                                        <h5><a href="{{ anime.attributes.slug }}">{{ anime.attributes.canonicalTitle }}</a></h5>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="product__sidebar__comment">
+                                <div class="section-title">
+                                    <h5>New Comment</h5>
+                                </div>
+                                <div class="product__sidebar__comment__item">
+                                    <div class="product__sidebar__comment__item__pic">
+                                        <img src="{% static 'anime/img/sidebar/comment-1.jpg' %}" alt="">
+                                    </div>
+                                    <div class="product__sidebar__comment__item__text">
+                                        <ul>
+                                            <li>Active</li>
+                                            <li>Movie</li>
+                                        </ul>
+                                        <h5><a href="#">The Seven Deadly Sins: Wrath of the Gods</a></h5>
+                                        <span><i class="fa fa-eye"></i> 19.141 Viewes</span>
+                                    </div>
+                                </div>
+                                <div class="product__sidebar__comment__item">
+                                    <div class="product__sidebar__comment__item__pic">
+                                        <img src="{% static 'anime/img/sidebar/comment-2.jpg' %}" alt="">
+                                    </div>
+                                    <div class="product__sidebar__comment__item__text">
+                                        <ul>
+                                            <li>Active</li>
+                                            <li>Movie</li>
+                                        </ul>
+                                        <h5><a href="#">Shirogane Tamashii hen Kouhan sen</a></h5>
+                                        <span><i class="fa fa-eye"></i> 19.141 Viewes</span>
+                                    </div>
+                                </div>
+                                <div class="product__sidebar__comment__item">
+                                    <div class="product__sidebar__comment__item__pic">
+                                        <img src="{% static 'anime/img/sidebar/comment-3.jpg' %}" alt="">
+                                    </div>
+                                    <div class="product__sidebar__comment__item__text">
+                                        <ul>
+                                            <li>Active</li>
+                                            <li>Movie</li>
+                                        </ul>
+                                        <h5><a href="#">Kizumonogatari III: Reiket su-hen</a></h5>
+                                        <span><i class="fa fa-eye"></i> 19.141 Viewes</span>
+                                    </div>
+                                </div>
+                                <div class="product__sidebar__comment__item">
+                                    <div class="product__sidebar__comment__item__pic">
+                                        <img src="{% static 'anime/img/sidebar/comment-4.jpg' %}" alt="">
+                                    </div>
+                                    <div class="product__sidebar__comment__item__text">
+                                        <ul>
+                                            <li>Active</li>
+                                            <li>Movie</li>
+                                        </ul>
+                                        <h5><a href="#">Monogatari Series: Second Season</a></h5>
+                                        <span><i class="fa fa-eye"></i> 19.141 Viewes</span>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <!-- Filtered by Week -->
+                        </div>
+                    </div>                    
+                </div>
+            </div>
         </div>
+    </div>
+</section>
+<!-- Product Section End -->
 
-        <div id="homepage-div">
-            <div class="header-and-buttons">
-                <h1 id="currently-airing-header"><i class="fa-solid fa-bars-progress"
-                        style="color: lime;"></i>&nbsp;&nbsp;THIS
-                    SEASON</h1>
-                <div class="scroll-buttons">
-                    <button class="scroll-buttons" id="previous-airing"><i class="fa-solid fa-arrow-left"></i></button>
-                    <button class="scroll-buttons" id="next-airing"><i class="fa-solid fa-arrow-right"></i></button>
-                </div>
-            </div>
-            <div id="airing-now-container">
-                {% for airing_now_anime in airing_now_data %}
-                <a href="anime/id={{ airing_now_anime.mal_id }}" class="anime-card-links">
-                    <div class="anime-cards">
-                        <img src="{{ airing_now_anime.images.jpg.image_url }}" class="image"
-                            alt="{{ airing_now_anime.title }}">
-                        <p class="anime-title">{{ airing_now_anime.title }}</p>
-                        <table class="airing-now-details-table">
-                            <tr>
-                                <td>
-                                    <i class="fa-solid fa-star" style="color: gold"></i>&nbsp;
-                                    {{ airing_now_anime.score|default:"N/A" }}
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </a>
-                {% empty %}
-                <p>No airing anime data available.</p>
-                {% endfor %}
-            </div>
-
-            <div class="header-and-buttons">
-                <h1 id="popular-anime-header"><i class="fa-solid fa-fire" style="color: red"></i>&nbsp;&nbsp;POPULAR
-                    ANIME
-                </h1>
-                <div class="scroll-buttons">
-                    <button class="scroll-buttons" id="previous-popular-anime"><i
-                            class="fa-solid fa-arrow-left"></i></button>
-                    <button class="scroll-buttons" id="next-popular-anime"><i
-                            class="fa-solid fa-arrow-right"></i></button>
-                </div>
-            </div>
-            <div id="popular-anime-container">
-                {% for popular_anime in popular_anime_data %}
-                <a href="anime/id={{ popular_anime.mal_id }}" class="anime-card-links">
-                    <div class="anime-cards">
-                        <img src="{{ popular_anime.images.jpg.image_url }}" class="image"
-                            alt="{{ popular_anime.title }}">
-                        <p class="anime-title">{{ popular_anime.title }}</p>
-                        <table class="airing-now-details-table">
-                            <tr>
-                                <td>
-                                    <i class="fa-solid fa-star" style="color: gold"></i>&nbsp;
-                                    {{ popular_anime.score|default:"N/A" }}
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </a>
-                {% empty %}
-                <p>No popular anime data available.</p>
-                {% endfor %}
-            </div>
-            <div class="header-and-buttons
-                <h1 id=" top-anime-header"><i class="fa-solid fa-ranking-star" style="color: gold;"></i>&nbsp;&nbsp;TOP
-                ANIME
-                </h1>
-                <div class="scroll-buttons">
-                    <button class="scroll-buttons" id="previous-top-anime"><i
-                            class="fa-solid fa-arrow-left"></i></button>
-                    <button class="scroll-buttons" id="next-top-anime"><i class="fa-solid fa-arrow-right"></i></button>
-                </div>
-            </div>
-            <div id="top-anime-container">
-                {% for top_anime in top_anime_data %}
-                <a href="anime/id={{ top_anime.mal_id }}" class="anime-card-links">
-                    <div class="anime-cards">
-                        <img src="{{ top_anime.images.jpg.image_url }}" class="image" alt="{{ top_anime.title }}">
-                        <p class="anime-title">{{ top_anime.title }}</p>
-                        <table class="airing-now-details-table">
-                            <tr>
-                                <td>
-                                    <i class="fa-solid fa-star" style="color: gold"></i>&nbsp;
-                                    {{ top_anime.score|default:"N/A" }}
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </a>
-                {% empty %}
-                <p>No top anime data available.</p>
-                {% endfor %}
-            </div>
-            <div class="header-and-buttons">
-                <h1 id="anime-movie-header"><i class="fa-solid fa-film" style="color: purple;"></i>&nbsp;&nbsp;TOP
-                    RECOMMENDATION
-                    ANIME
-                </h1>
-                <div class="scroll-buttons">
-                    <button class="scroll-buttons" id="previous-anime-movie"><i
-                            class="fa-solid fa-arrow-left"></i></button>
-                    <button class="scroll-buttons" id="next-anime-movie"><i
-                            class="fa-solid fa-arrow-right"></i></button>
-                </div>
-            </div>
-            <div id="anime-movie-container">
-                {% for recommendation in anime_recommendations %}
-                <a href="anime/id={{ recommendation.entry.mal_id }}" class="anime-card-links">
-                    <div class="anime-cards">
-                        <img src="{{ recommendation.entry.images.jpg.image_url }}" class="image"
-                            alt="{{ recommendation.entry.title }}">
-                        <p class="anime-title">{{ recommendation.entry.title }}</p>
-                        <table class="airing-now-details-table">
-                            <tr>
-                                <td>
-                                    <i class="fa-solid fa-star" style="color: gold"></i>&nbsp;
-                                    {{ recommendation.score|default:"N/A" }}
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </a>
-                {% empty %}
-                <p>No anime recommendations available.</p>
-                {% endfor %}
-            </div>
-        </div>
-    </center>
-</body>
-<script src={% static 'js/index.js' %}></script>
-
-</html>
+{% endblock %}

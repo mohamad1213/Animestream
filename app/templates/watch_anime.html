@@ -1,0 +1,141 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+<link href="https://cdn.plyr.io/3.6.2/plyr.css" rel="stylesheet">
+<script src="https://cdn.plyr.io/3.6.2/plyr.polyfilled.js"></script>
+<!-- Breadcrumb Begin -->
+<div class="breadcrumb-option">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb__links">
+                    <a href="./index.html"><i class="fa fa-home"></i> Home</a>
+                    <a href="./categories.html">Categories</a>
+                    <a href="#">Romance</a>
+                    <span>Fate Stay Night: Unlimited Blade</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Anime Section Begin -->
+<section class="anime-details spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <!-- Video Player -->
+                <div class="anime__video__player">
+                    <video controls width="600">
+                        <source src="https://fgh5.biananset.net/_v7/0fece0b01b5b1d19095d6f7bb3cc0be7827e65eac0885997133d5c946d9be3ecc96d33f219a7bb17001d57b274f137777855a64a792e149a39597de79becb0698f75a275a2945bd5dadd493a6183d54b3f8d6ff432860163cfbab1355ccd873c311954e8b86ddcd301d8fc6c28d9048f7e106b83aa5d98f3a20b5857f4fc0bfe/master.m3u8" type="video/mp4">
+                        <track src="https://ccb.megafiles.store/40/14/4014e98e04402f1fac61b1b434e4db08/eng-2.vtt" kind="subtitles" srclang="en" label="English" default>
+                      </video>
+                </div>
+                <!-- Episode List -->
+                <div class="anime__details__episodes">
+                    <div class="section-title">
+                        <h5>Episodes</h5>
+                    </div>
+                    {% if episodes_data %}
+                    {% for episode in episodes_data %}
+                    <a href="#" class="episode-link" data-video-url="{{ episode.attributes.streamingLinks }}">
+                        Ep {{ episode.attributes.number }}: {{ episode.attributes.canonicalTitle }}
+                    </a>
+                    {% endfor %}
+                    {% else %}
+                    <p>No episodes available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="anime__details__review">
+                    <div class="section-title">
+                        <h5>Reviews</h5>
+                    </div>
+                    <div class="anime__review__item">
+                        <div class="anime__review__item__pic">
+                            <img src="img/anime/review-1.jpg" alt="">
+                        </div>
+                        <div class="anime__review__item__text">
+                            <h6>Chris Curry - <span>1 Hour ago</span></h6>
+                            <p>whachikan Just noticed that someone categorized this as belonging to the genre
+                                "demons" LOL</p>
+                        </div>
+                    </div>
+                    <div class="anime__review__item">
+                        <div class="anime__review__item__pic">
+                            <img src="img/anime/review-2.jpg" alt="">
+                        </div>
+                        <div class="anime__review__item__text">
+                            <h6>Lewis Mann - <span>5 Hour ago</span></h6>
+                            <p>Finally it came out ages ago</p>
+                        </div>
+                    </div>
+                    <div class="anime__review__item">
+                        <div class="anime__review__item__pic">
+                            <img src="img/anime/review-3.jpg" alt="">
+                        </div>
+                        <div class="anime__review__item__text">
+                            <h6>Louis Tyler - <span>20 Hour ago</span></h6>
+                            <p>Where is the episode 15 ? Slow update! Tch</p>
+                        </div>
+                    </div>
+                    <div class="anime__review__item">
+                        <div class="anime__review__item__pic">
+                            <img src="img/anime/review-4.jpg" alt="">
+                        </div>
+                        <div class="anime__review__item__text">
+                            <h6>Chris Curry - <span>1 Hour ago</span></h6>
+                            <p>whachikan Just noticed that someone categorized this as belonging to the genre
+                                "demons" LOL</p>
+                        </div>
+                    </div>
+                    <div class="anime__review__item">
+                        <div class="anime__review__item__pic">
+                            <img src="img/anime/review-5.jpg" alt="">
+                        </div>
+                        <div class="anime__review__item__text">
+                            <h6>Lewis Mann - <span>5 Hour ago</span></h6>
+                            <p>Finally it came out ages ago</p>
+                        </div>
+                    </div>
+                    <div class="anime__review__item">
+                        <div class="anime__review__item__pic">
+                            <img src="img/anime/review-6.jpg" alt="">
+                        </div>
+                        <div class="anime__review__item__text">
+                            <h6>Louis Tyler - <span>20 Hour ago</span></h6>
+                            <p>Where is the episode 15 ? Slow update! Tch</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="anime__details__form">
+                    <div class="section-title">
+                        <h5>Your Comment</h5>
+                    </div>
+                    <form action="#">
+                        <textarea placeholder="Your Comment"></textarea>
+                        <button type="submit"><i class="fa fa-location-arrow"></i> Review</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- <script>
+    document.querySelectorAll('.episode-link').forEach(function (episodeLink) {
+        episodeLink.addEventListener('click', function (event) {
+            event.preventDefault();
+            var videoUrl = event.target.getAttribute('data-video-url');
+            var videoPlayer = document.getElementById('player');
+            var videoSource = document.getElementById('videoSource');
+            videoSource.src = videoUrl;  // Update the video source URL
+            videoPlayer.load();  // Reload the video player with the new source
+            videoPlayer.play();  // Play the selected episode
+        });
+    });
+</script> -->
+{% endblock %}
