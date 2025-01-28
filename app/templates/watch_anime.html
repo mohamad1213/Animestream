@@ -9,133 +9,249 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="breadcrumb__links">
-                    <a href="./index.html"><i class="fa fa-home"></i> Home</a>
-                    <a href="./categories.html">Categories</a>
-                    <a href="#">Romance</a>
-                    <span>Fate Stay Night: Unlimited Blade</span>
+                    <a href="/"><i class="fa fa-home"></i> Home</a>
+                    <a href="./categories.html">{{watch_anime.}}</a>
+                    <a href="#">{{watch_anime.name}}</a>
+                    <span>{{pagetitle}}</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <!-- Breadcrumb End -->
+<style>
+    .anime__video__player {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 300px;
+        /* Atur tinggi container sesuai kebutuhan */
+        background-color: #000;
+        /* Warna hitam untuk latar belakang */
+        border-radius: 8px;
+        /* Opsional: sudut melengkung */
+        position: relative;
+        overflow: hidden;
+    }
 
+    .video-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    .resolution-buttons {
+        text-align: center;
+    }
+
+    .resolution-btn {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        margin: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .resolution-btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+<link href="https://vjs.zencdn.net/7.2.3/video-js.css" rel="stylesheet">
 <!-- Anime Section Begin -->
 <section class="anime-details spad">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <!-- Video Player -->
                 <div class="anime__video__player">
-                    <video controls width="600">
-                        <source src="https://fgh5.biananset.net/_v7/0fece0b01b5b1d19095d6f7bb3cc0be7827e65eac0885997133d5c946d9be3ecc96d33f219a7bb17001d57b274f137777855a64a792e149a39597de79becb0698f75a275a2945bd5dadd493a6183d54b3f8d6ff432860163cfbab1355ccd873c311954e8b86ddcd301d8fc6c28d9048f7e106b83aa5d98f3a20b5857f4fc0bfe/master.m3u8" type="video/mp4">
-                        <track src="https://ccb.megafiles.store/40/14/4014e98e04402f1fac61b1b434e4db08/eng-2.vtt" kind="subtitles" srclang="en" label="English" default>
-                      </video>
+                    <div class="video-container">
+                        {% for video in watch_anime.video_embed_links %}
+                        <div class="resolution-buttons">
+                            <a class="btn btn-danger" href="{{ video.link }}" target="_blank" class="resolution-link"
+                                data-res="320"> Link {{ video.resolution }}
+                            </a> |
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
                 <!-- Episode List -->
                 <div class="anime__details__episodes">
                     <div class="section-title">
                         <h5>Episodes</h5>
                     </div>
-                    {% if episodes_data %}
-                    {% for episode in episodes_data %}
-                    <a href="#" class="episode-link" data-video-url="{{ episode.attributes.streamingLinks }}">
-                        Ep {{ episode.attributes.number }}: {{ episode.attributes.canonicalTitle }}
-                    </a>
+                    {% for link in processed_links %}
+                    <a href="/anime/watch/2025/01/{{link.url}}/">{{link.nav_name}}</a>
                     {% endfor %}
-                    {% else %}
-                    <p>No episodes available.</p>
-                    {% endif %}
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="anime__details__review">
-                    <div class="section-title">
-                        <h5>Reviews</h5>
+        <div class="anime__details__content">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="anime__details__pic set-bg" data-setbg="{{watch_anime.thumbnail}}">
+                        <div class="comment"><i class="fa fa-comments"></i> 11</div>
+                        <div class="view"><i class="fa fa-eye"></i> 9141</div>
                     </div>
-                    <div class="anime__review__item">
-                        <div class="anime__review__item__pic">
-                            <img src="img/anime/review-1.jpg" alt="">
+                </div>
+                <div class="col-lg-9">
+                    <div class="anime__details__text">
+                        <div class="anime__details__title">
+                            <h3>{{watch_anime.name}}</h3>
                         </div>
-                        <div class="anime__review__item__text">
-                            <h6>Chris Curry - <span>1 Hour ago</span></h6>
-                            <p>whachikan Just noticed that someone categorized this as belonging to the genre
-                                "demons" LOL</p>
-                        </div>
-                    </div>
-                    <div class="anime__review__item">
-                        <div class="anime__review__item__pic">
-                            <img src="img/anime/review-2.jpg" alt="">
-                        </div>
-                        <div class="anime__review__item__text">
-                            <h6>Lewis Mann - <span>5 Hour ago</span></h6>
-                            <p>Finally it came out ages ago</p>
-                        </div>
-                    </div>
-                    <div class="anime__review__item">
-                        <div class="anime__review__item__pic">
-                            <img src="img/anime/review-3.jpg" alt="">
-                        </div>
-                        <div class="anime__review__item__text">
-                            <h6>Louis Tyler - <span>20 Hour ago</span></h6>
-                            <p>Where is the episode 15 ? Slow update! Tch</p>
-                        </div>
-                    </div>
-                    <div class="anime__review__item">
-                        <div class="anime__review__item__pic">
-                            <img src="img/anime/review-4.jpg" alt="">
-                        </div>
-                        <div class="anime__review__item__text">
-                            <h6>Chris Curry - <span>1 Hour ago</span></h6>
-                            <p>whachikan Just noticed that someone categorized this as belonging to the genre
-                                "demons" LOL</p>
-                        </div>
-                    </div>
-                    <div class="anime__review__item">
-                        <div class="anime__review__item__pic">
-                            <img src="img/anime/review-5.jpg" alt="">
-                        </div>
-                        <div class="anime__review__item__text">
-                            <h6>Lewis Mann - <span>5 Hour ago</span></h6>
-                            <p>Finally it came out ages ago</p>
-                        </div>
-                    </div>
-                    <div class="anime__review__item">
-                        <div class="anime__review__item__pic">
-                            <img src="img/anime/review-6.jpg" alt="">
-                        </div>
-                        <div class="anime__review__item__text">
-                            <h6>Louis Tyler - <span>20 Hour ago</span></h6>
-                            <p>Where is the episode 15 ? Slow update! Tch</p>
+                        <!-- <div class="anime__details__rating">
+                            <div class="rating">
+                                <a href="#"><i class="fa fa-star"></i></a>
+                                <a href="#"><i class="fa fa-star"></i></a>
+                                <a href="#"><i class="fa fa-star"></i></a>
+                                <a href="#"><i class="fa fa-star"></i></a>
+                                <a href="#"><i class="fa fa-star-half-o"></i></a>
+                            </div>
+                            <span>1.029 Votes</span>
+                        </div> -->
+                        <p>{{watch_anime.synopsis}}</p>
+                        <div class="anime__details__widget">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6">
+                                    <ul>
+                                        <li><span>Type:</span> TV Series</li>
+                                        <li><span>Studios:</span> Lerche</li>
+                                        <li><span>Date aired:</span> Oct 02, 2019 to ?</li>
+                                        <li><span>Status:</span> Airing</li>
+                                        <li><span>Genre:</span> Action, Adventure, Fantasy, Magic</li>
+                                    </ul>
+                                </div>
+                                <div class="col-lg-6 col-md-6">
+                                    <ul>
+                                        <li><span>Scores:</span> 7.31 / 1,515</li>
+                                        <li><span>Rating:</span> 8.5 / 161 times</li>
+                                        <li><span>Duration:</span> 24 min/ep</li>
+                                        <li><span>Quality:</span> HD</li>
+                                        <li><span>Views:</span> 131,541</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="anime__details__form">
-                    <div class="section-title">
-                        <h5>Your Comment</h5>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 col-md-8">
+                    <div class="anime__details__review">
+                        <div class="section-title">
+                            <h5>Reviews</h5>
+                        </div>
+                        <div class="anime__review__item">
+                            <div class="anime__review__item__pic">
+                                <img src="img/anime/review-1.jpg" alt="">
+                            </div>
+                            <div class="anime__review__item__text">
+                                <h6>Chris Curry - <span>1 Hour ago</span></h6>
+                                <p>whachikan Just noticed that someone categorized this as belonging to the genre
+                                    "demons" LOL</p>
+                            </div>
+                        </div>
+                        <div class="anime__review__item">
+                            <div class="anime__review__item__pic">
+                                <img src="img/anime/review-2.jpg" alt="">
+                            </div>
+                            <div class="anime__review__item__text">
+                                <h6>Lewis Mann - <span>5 Hour ago</span></h6>
+                                <p>Finally it came out ages ago</p>
+                            </div>
+                        </div>
+                        <div class="anime__review__item">
+                            <div class="anime__review__item__pic">
+                                <img src="img/anime/review-3.jpg" alt="">
+                            </div>
+                            <div class="anime__review__item__text">
+                                <h6>Louis Tyler - <span>20 Hour ago</span></h6>
+                                <p>Where is the episode 15 ? Slow update! Tch</p>
+                            </div>
+                        </div>
+                        <div class="anime__review__item">
+                            <div class="anime__review__item__pic">
+                                <img src="img/anime/review-4.jpg" alt="">
+                            </div>
+                            <div class="anime__review__item__text">
+                                <h6>Chris Curry - <span>1 Hour ago</span></h6>
+                                <p>whachikan Just noticed that someone categorized this as belonging to the genre
+                                    "demons" LOL</p>
+                            </div>
+                        </div>
+                        <div class="anime__review__item">
+                            <div class="anime__review__item__pic">
+                                <img src="img/anime/review-5.jpg" alt="">
+                            </div>
+                            <div class="anime__review__item__text">
+                                <h6>Lewis Mann - <span>5 Hour ago</span></h6>
+                                <p>Finally it came out ages ago</p>
+                            </div>
+                        </div>
+                        <div class="anime__review__item">
+                            <div class="anime__review__item__pic">
+                                <img src="img/anime/review-6.jpg" alt="">
+                            </div>
+                            <div class="anime__review__item__text">
+                                <h6>Louis Tyler - <span>20 Hour ago</span></h6>
+                                <p>Where is the episode 15 ? Slow update! Tch</p>
+                            </div>
+                        </div>
                     </div>
-                    <form action="#">
-                        <textarea placeholder="Your Comment"></textarea>
-                        <button type="submit"><i class="fa fa-location-arrow"></i> Review</button>
-                    </form>
+                    <div class="anime__details__form">
+                        <div class="section-title">
+                            <h5>Your Comment</h5>
+                        </div>
+                        <form action="#">
+                            <textarea placeholder="Your Comment"></textarea>
+                            <button type="submit"><i class="fa fa-location-arrow"></i> Review</button>
+                        </form>
+                    </div>
                 </div>
+                <!-- <div class="col-lg-4 col-md-4">
+                    <div class="anime__details__sidebar">
+                        <div class="section-title">
+                            <h5>you might like...</h5>
+                        </div>
+                        <div class="product__sidebar__view__item set-bg" data-setbg="img/sidebar/tv-1.jpg">
+                            <div class="ep">18 / ?</div>
+                            <div class="view"><i class="fa fa-eye"></i> 9141</div>
+                            <h5><a href="#">Boruto: Naruto next generations</a></h5>
+                        </div>
+                        <div class="product__sidebar__view__item set-bg" data-setbg="img/sidebar/tv-2.jpg">
+                            <div class="ep">18 / ?</div>
+                            <div class="view"><i class="fa fa-eye"></i> 9141</div>
+                            <h5><a href="#">The Seven Deadly Sins: Wrath of the Gods</a></h5>
+                        </div>
+                        <div class="product__sidebar__view__item set-bg" data-setbg="img/sidebar/tv-3.jpg">
+                            <div class="ep">18 / ?</div>
+                            <div class="view"><i class="fa fa-eye"></i> 9141</div>
+                            <h5><a href="#">Sword art online alicization war of underworld</a></h5>
+                        </div>
+                        <div class="product__sidebar__view__item set-bg" data-setbg="img/sidebar/tv-4.jpg">
+                            <div class="ep">18 / ?</div>
+                            <div class="view"><i class="fa fa-eye"></i> 9141</div>
+                            <h5><a href="#">Fate/stay night: Heaven's Feel I. presage flower</a></h5>
+                        </div>
+                    </div>
+                </div> -->
             </div>
         </div>
     </div>
+    <!-- JS code -->
+    <!-- If you'd like to support IE8 (for Video.js versions prior to v7) -->
+    <script src="https://vjs.zencdn.net/ie8/ie8-version/videojs-ie8.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/5.14.1/videojs-contrib-hls.js"></script>
+    <script src="https://vjs.zencdn.net/7.2.3/video.js"></script>
+
+    <script>
+        var player = videojs('hls-example');
+        player.play();
+    </script>
 </section>
-<!-- <script>
-    document.querySelectorAll('.episode-link').forEach(function (episodeLink) {
-        episodeLink.addEventListener('click', function (event) {
-            event.preventDefault();
-            var videoUrl = event.target.getAttribute('data-video-url');
-            var videoPlayer = document.getElementById('player');
-            var videoSource = document.getElementById('videoSource');
-            videoSource.src = videoUrl;  // Update the video source URL
-            videoPlayer.load();  // Reload the video player with the new source
-            videoPlayer.play();  // Play the selected episode
-        });
-    });
-</script> -->
 {% endblock %}
