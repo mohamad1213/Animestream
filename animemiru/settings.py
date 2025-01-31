@@ -79,7 +79,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
 import os
 STATIC_URL = '/static/'
 
