@@ -9,6 +9,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*', '.vercel.app']
 
 INSTALLED_APPS = [
+    # 'whitenoise.runserver_nostatic'
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -82,7 +83,7 @@ USE_TZ = True
 import os
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_DIRS = [os.path.join(BASE_DIR, 'app/static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
